@@ -23,7 +23,7 @@ namespace ET
 	        UnitComponent unitComponent = domain.GetComponent<UnitComponent>();
             unitComponent.Add(unit);
             
-            Game.EventSystem.Publish(new EventType.AfterUnitCreate() {Unit = unit});
+            Game.EventSystem.Publish(new EventType.AfterUnitCreate() {Unit = unit}).Coroutine();
             return unit;
         }
     }
