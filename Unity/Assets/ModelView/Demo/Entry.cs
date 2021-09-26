@@ -5,12 +5,15 @@ using System.Threading;
 
 namespace ET
 {
-	public class Entry : IEntry
+    /// <summary>客户端入口</summary>
+    public class Entry : IEntry
 	{
 		public void Start()
 		{
 			try
 			{
+				//	逻辑层和表现层分离
+				//	四个程序集Model(Model.dll、MoveView.dll)和热更新Hotfix(Hotfix.dll、HotfixView.dll)
 				string[] assemblyNames = { "Unity.Model.dll", "Unity.Hotfix.dll", "Unity.ModelView.dll", "Unity.HotfixView.dll" };
 				
 				foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -20,6 +23,7 @@ namespace ET
 					{
 						continue;
 					}
+					//	添加解析程序集
 					Game.EventSystem.Add(assembly);
 				}
 				

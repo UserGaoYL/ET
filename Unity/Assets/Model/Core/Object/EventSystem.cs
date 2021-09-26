@@ -86,6 +86,10 @@ namespace ET
 			this.Add(typeof(EventSystem).Assembly);
 		}
 
+		/// <summary>
+		/// 添加并解析程序集
+		/// </summary>
+		/// <param name="assembly"></param>
 		public void Add(Assembly assembly)
 		{
 			this.assemblies[$"{assembly.GetName().Name}.dll"] = assembly;
@@ -105,6 +109,7 @@ namespace ET
 						continue;
 					}
 
+					//	解析属性BaseAttribute
 					foreach (BaseAttribute baseAttribute in objects)
 					{
 						this.types.Add(baseAttribute.AttributeType, type);
@@ -114,6 +119,7 @@ namespace ET
 
 			this.typeSystems = new TypeSystems();
 			
+			//	解析所有的ObjectSystem属性
 			foreach (Type type in this.GetTypes(typeof(ObjectSystemAttribute)))
 			{
 				object obj = Activator.CreateInstance(type);
@@ -126,6 +132,7 @@ namespace ET
 			}
 
 			this.allEvents.Clear();
+			//	解析所有的Event属性
 			foreach (Type type in types[typeof(EventAttribute)])
 			{
 				IEvent obj = Activator.CreateInstance(type) as IEvent;
@@ -139,6 +146,7 @@ namespace ET
 				{
 					this.allEvents.Add(eventType, new List<object>());
 				}
+				//	在这里初始化监听所有的事件
 				this.allEvents[eventType].Add(obj);
 			}
 			
@@ -176,13 +184,21 @@ namespace ET
 			return typeof (Game).Assembly.GetType(typeName);
 		}
 
+		/// <summary>
+		/// 注册System
+		/// </summary>
+		/// <param name="component">实体对象</param>
+		/// <param name="isRegister">是否注册</param>
 		public void RegisterSystem(Entity component, bool isRegister = true)
 		{
+			//	取消注册
 			if (!isRegister)
 			{
 				this.Remove(component.InstanceId);
 				return;
 			}
+
+			//	添加注册
 			this.allComponents.Add(component.InstanceId, component);
 			
 			Type type = component.GetType();

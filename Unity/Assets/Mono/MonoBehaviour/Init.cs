@@ -5,26 +5,39 @@ using UnityEngine;
 
 namespace ET
 {
-	public interface IEntry
+    /// <summary>入口生命周期</summary>
+    public interface IEntry
 	{
-		void Start();
-		void Update();
-		void LateUpdate();
+        /// <summary>OnStart</summary>
+        void Start();
+        /// <summary>OnUpdate</summary>
+        void Update();
+        /// <summary>OnLateUpdate</summary>
+        void LateUpdate();
+		/// <summary>OnApplicationQuit</summary>
 		void OnApplicationQuit();
 	}
-	
-	public class Init: MonoBehaviour
+
+    /// <summary>项目初始化脚本</summary>
+    public class Init: MonoBehaviour
 	{
-		private IEntry entry;
+        /// <summary>总入口</summary>
+        private IEntry entry;
 		
 		private void Awake()
 		{
+			//	同步上下文设置默认主线程
 			SynchronizationContext.SetSynchronizationContext(ThreadSynchronizationContext.Instance);
 			
 			DontDestroyOnLoad(gameObject);
 			
 			Assembly modelAssembly = null;
-			foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+
+			//	AppDomain所有程序集	
+			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+			//	遍历查找Unity.ModelView.dll
+			foreach (Assembly assembly in assemblies)
 			{
 				string assemblyName = $"{assembly.GetName().Name}.dll";
 				if (assemblyName != "Unity.ModelView.dll")
@@ -35,6 +48,7 @@ namespace ET
 				break;
 			}
 
+			//	初始化Unity.ModelView.dll入口Entry
 			Type initType = modelAssembly.GetType("ET.Entry");
 			this.entry = Activator.CreateInstance(initType) as IEntry;
 		}
