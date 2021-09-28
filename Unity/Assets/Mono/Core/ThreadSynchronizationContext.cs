@@ -4,6 +4,7 @@ using System.Threading;
 
 namespace ET
 {
+    /// <summary>线程同步上下文(用于不同线程相互调用)</summary>
     public class ThreadSynchronizationContext : SynchronizationContext
     {
         public static ThreadSynchronizationContext Instance { get; } = new ThreadSynchronizationContext(Thread.CurrentThread.ManagedThreadId);
@@ -49,8 +50,10 @@ namespace ET
             this.Post(() => callback(state));
         }
 		
+
         public void Post(Action action)
         {
+            //  相同线程，直接执行Action
             if (Thread.CurrentThread.ManagedThreadId == this.threadId)
             {
                 try
@@ -69,6 +72,7 @@ namespace ET
                 return;
             }
 
+            //  不同线程，添加到队列，Update统一调用
             this.queue.Enqueue(action);
         }
 		
