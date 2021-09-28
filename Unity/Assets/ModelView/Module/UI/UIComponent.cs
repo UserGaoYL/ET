@@ -3,7 +3,7 @@
 namespace ET
 {
 	/// <summary>
-	/// 管理Scene上的UI(类似于UIManager)
+	/// 管理Scene上的UI(UIManager 数据)
 	/// </summary>
 	public class UIComponent: Entity
 	{
