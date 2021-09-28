@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace ET
 {
-	public class AnimatorComponentAwakeSystem : AwakeSystem<AnimatorComponent>
+    /// <summary>动作组件Awake</summary>
+    public class AnimatorComponentAwakeSystem : AwakeSystem<AnimatorComponent>
 	{
 		public override void Awake(AnimatorComponent self)
 		{
@@ -11,15 +12,17 @@ namespace ET
 		}
 	}
 
-	public class AnimatorComponentUpdateSystem : UpdateSystem<AnimatorComponent>
+    /// <summary>动作组件Update</summary>
+    public class AnimatorComponentUpdateSystem : UpdateSystem<AnimatorComponent>
 	{
 		public override void Update(AnimatorComponent self)
 		{
 			self.Update();
 		}
 	}
-	
-	public class AnimatorComponentDestroySystem : DestroySystem<AnimatorComponent>
+
+    /// <summary>动作组件销毁</summary>
+    public class AnimatorComponentDestroySystem : DestroySystem<AnimatorComponent>
 	{
 		public override void Destroy(AnimatorComponent self)
 		{
@@ -29,10 +32,12 @@ namespace ET
 		}
 	}
 
-	public static class AnimatorComponentSystem
+    /// <summary>动作组件逻辑</summary>
+    public static class AnimatorComponentSystem
 	{
 		public static void Awake(this AnimatorComponent self)
 		{
+			//	获取GameObject身上的Animator脚本
 			Animator animator = self.Parent.GetComponent<GameObjectComponent>().GameObject.GetComponent<Animator>();
 
 			if (animator == null)
@@ -49,6 +54,7 @@ namespace ET
 			{
 				return;
 			}
+			//	解析并赋值相对应的动作数据
 			self.Animator = animator;
 			foreach (AnimationClip animationClip in animator.runtimeAnimatorController.animationClips)
 			{
@@ -74,8 +80,9 @@ namespace ET
 
 			try
 			{
+				//	动作速度
 				self.Animator.SetFloat("MotionSpeed", self.MontionSpeed);
-
+				//	动作状态
 				self.Animator.SetTrigger(self.MotionType.ToString());
 
 				self.MontionSpeed = 1;
@@ -87,19 +94,33 @@ namespace ET
 			}
 		}
 
+		/// <summary>
+		/// 监测是否包含字段
+		/// </summary>
+		/// <param name="self">动作组件</param>
+		/// <param name="parameter">要获取的字段名</param>
+		/// <returns>是否存在</returns>
 		public static bool HasParameter(this AnimatorComponent self, string parameter)
 		{
 			return self.Parameter.Contains(parameter);
 		}
 
+		/// <summary>
+		/// 播放动作
+		/// </summary>
+		/// <param name="self">动作组件</param>
+		/// <param name="motionType">动作状态</param>
+		/// <param name="time">时间</param>
 		public static void PlayInTime(this AnimatorComponent self, MotionType motionType, float time)
 		{
+			//	获取动作片段
 			AnimationClip animationClip;
 			if (!self.animationClips.TryGetValue(motionType.ToString(), out animationClip))
 			{
 				throw new Exception($"找不到该动作: {motionType}");
 			}
 
+			//	根据动作片段总时长和time，计算播放速度
 			float motionSpeed = animationClip.length / time;
 			if (motionSpeed < 0.01f || motionSpeed > 1000f)
 			{
@@ -110,6 +131,12 @@ namespace ET
 			self.MontionSpeed = motionSpeed;
 		}
 
+		/// <summary>
+		/// 播放动作
+		/// </summary>
+		/// <param name="self">动作组件</param>
+		/// <param name="motionType">动作状态</param>
+		/// <param name="motionSpeed">动作速度</param>
 		public static void Play(this AnimatorComponent self, MotionType motionType, float motionSpeed = 1f)
 		{
 			if (!self.HasParameter(motionType.ToString()))
@@ -120,6 +147,12 @@ namespace ET
 			self.MontionSpeed = motionSpeed;
 		}
 
+		/// <summary>
+		/// 获取动画时间
+		/// </summary>
+		/// <param name="self">动作组件</param>
+		/// <param name="motionType">动作类型</param>
+		/// <returns></returns>
 		public static float AnimationTime(this AnimatorComponent self, MotionType motionType)
 		{
 			AnimationClip animationClip;
@@ -130,7 +163,8 @@ namespace ET
 			return animationClip.length;
 		}
 
-		public static void PauseAnimator(this AnimatorComponent self)
+        /// <summary>暂停动作(设置播放速度为0)</summary>
+        public static void PauseAnimator(this AnimatorComponent self)
 		{
 			if (self.isStop)
 			{
@@ -146,7 +180,8 @@ namespace ET
 			self.Animator.speed = 0;
 		}
 
-		public static void RunAnimator(this AnimatorComponent self)
+        /// <summary>继续播放动作</summary>
+        public static void RunAnimator(this AnimatorComponent self)
 		{
 			if (!self.isStop)
 			{
@@ -159,6 +194,7 @@ namespace ET
 			{
 				return;
 			}
+			//	以停止时的动作继续播放
 			self.Animator.speed = self.stopSpeed;
 		}
 
