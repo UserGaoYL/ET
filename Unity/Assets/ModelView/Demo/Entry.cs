@@ -30,8 +30,9 @@ namespace ET
 				ProtobufHelper.Init();
 				
 				Game.Options = new Options();
-				
-				Game.EventSystem.Publish(new EventType.AppStart()).Coroutine();
+
+                /// <summary>发布AppStart事件</summary>
+                Game.EventSystem.Publish(new EventType.AppStart()).Coroutine();
 			}
 			catch (Exception e)
 			{

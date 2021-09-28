@@ -18,11 +18,13 @@ namespace ET
 		}
 	}
 
-	public class CameraComponent : Entity
+    /// <summary>相机实体数据结构</summary>
+    public class CameraComponent : Entity
 	{
 		// 战斗摄像机
 		public Camera mainCamera;
 
+		//	相机实体关联的Unit
 		public Unit Unit;
 
 		public Camera MainCamera
@@ -46,6 +48,7 @@ namespace ET
 
 		private void UpdatePosition()
 		{
+			//	根据Unit实体坐标，刷新相机位置
 			Vector3 cameraPos = this.mainCamera.transform.position;
 			this.mainCamera.transform.position = new Vector3(this.Unit.Position.x, cameraPos.y, this.Unit.Position.z - 1);
 		}

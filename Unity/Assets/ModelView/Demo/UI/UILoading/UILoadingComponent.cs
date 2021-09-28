@@ -1,10 +1,11 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 
 namespace ET
 {
-	public class UILoadingComponent : Entity
+    /// <summary>加载界面数据结构</summary>
+    public class UILoadingComponent : Entity
 	{
-		public Text text;
+        /// <summary>提示文本</summary>
+        public Text text;
 	}
 }

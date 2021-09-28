@@ -1,15 +1,16 @@
-﻿using System;
-using System.Net;
-
+﻿
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace ET
 {
-	public class UILoginComponent: Entity
+    /// <summary>登录界面数据结构</summary>
+    public class UILoginComponent: Entity
 	{
-		public GameObject account;
+        /// <summary>账号</summary>
+        public GameObject account;
+        /// <summary>密码</summary>
 		public GameObject password;
+        /// <summary>登录按钮</summary>
 		public GameObject loginBtn;
 	}
 }
