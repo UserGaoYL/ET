@@ -2,7 +2,8 @@
 
 namespace ET
 {
-	public static class LayerNames
+    /// <summary>游戏对象层名字(对应Unity Layer类型)</summary>
+    public static class LayerNames
 	{
 		/// <summary>
 		/// UI层
@@ -36,7 +37,8 @@ namespace ET
 			return LayerMask.NameToLayer(name);
 		}
 
-		public static string GetLayerStr(int name)
+        /// <summary>通过Layer得到name</summary>
+        public static string GetLayerStr(int name)
 		{
 			return LayerMask.LayerToName(name);
 		}

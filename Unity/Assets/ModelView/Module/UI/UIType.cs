@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace ET
+﻿namespace ET
 {
+    /// <summary>UI类型(UI枚举)</summary>
     public static class UIType
     {
 	    public const string Root = "Root";
