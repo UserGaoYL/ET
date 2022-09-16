@@ -4,23 +4,45 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ET
 {
+
+    ///<summary>Entity类型</summary>
     [Flags]
     public enum EntityStatus: byte
     {
         None = 0,
+        ///<summary>来自对象池</summary>
         IsFromPool = 1,
+        ///<summary>需要注册到生命周期管理</summary>
         IsRegister = 1 << 1,
+        ///<summary>是否是组件,只有在AddComponent时会内部设置(Component.Id与它的ComponentParent.Id一直)</summary>
         IsComponent = 1 << 2,
+        ///<summary>只有在Create或设置Parent或者Domain时会内部设置</summary>
         IsCreated = 1 << 3,
+        ///<summary>是否是新的对象，只有在创建Scene或者Entity.Create时会内部设置</summary>
         IsNew = 1 << 4,
     }
 
     public partial class Entity: DisposeObject
     {
 #if ENABLE_VIEW && UNITY_EDITOR
+        ///<summary>开启ENABLE_VIEW后,在IsRegister时，会创建GameObject用于显示Entity信息</summary>
         private UnityEngine.GameObject viewGO;
 #endif
+
+        #region InstanceId解释
+        /*
+         *  中国有很多城市（进程），城市中有很多人（Entity对象）居住，每个人（Entity）都有唯一的身份证号（Entity.Id）。
+         *  一个人每到一个城市，都需要办理当地的居住证，分配到唯一的居住证号码（Entity.InstanceId），居住证号码的格式是：2字节市编号 + 4字节时间 + 2字节递增
+         *  身份证号码是永远不变的，但是居住证号码每到一个城市都是变化的。
+         * 
+         */
+        #endregion
         
+        
+        /// <summary>
+        /// Entity在当前Scene中的实例Id,可能会发生变化,对象的Id是不变的
+        /// 比如玩家从线路1换到线路2、或者从场景1进入到场景2，都会造成对象InstanceId变化
+        /// </summary>
         [BsonIgnore]
         public long InstanceId
         {
@@ -72,6 +94,7 @@ namespace ET
                     this.status &= ~EntityStatus.IsRegister;
                 }
 
+                //  注册到生命周期管理
                 EventSystem.Instance.RegisterSystem(this, value);
                 
 #if ENABLE_VIEW && UNITY_EDITOR
@@ -89,7 +112,8 @@ namespace ET
 #endif
             }
         }
-        
+
+        ///<summary>Editor模式下显示名字</summary>
         protected virtual string ViewName
         {
             get
@@ -149,13 +173,19 @@ namespace ET
             }
         }
 
+        ///<summary>销毁后实例ID会重置为0</summary>
         [BsonIgnore]
         public bool IsDisposed => this.InstanceId == 0;
 
         [BsonIgnore]
         protected Entity parent;
 
-        // 可以改变parent，但是不能设置为null
+        /// <summary>
+        /// 设置Entity父节点
+        /// </summary>
+        /// <exception cref="Exception">不允许设置为空</exception>
+        /// <exception cref="Exception">不允许把自己设置为自己的父节点</exception>
+        /// <exception cref="Exception">所设置的父节点Domain不允许为空</exception>
         [BsonIgnore]
         public Entity Parent
         {
@@ -190,6 +220,7 @@ namespace ET
                 }
                 
                 this.parent = value;
+                //  设置了Parent，作为子节点，就不是组件了
                 this.IsComponent = false;
                 this.parent.AddToChildren(this);
                 this.Domain = this.parent.domain;
@@ -241,6 +272,9 @@ namespace ET
             return this.Parent as T;
         }
 
+        /// <summary>
+        /// 唯一Id，添加组件时，组件Id与当前Entity.Id一致
+        /// </summary>
         [BsonIgnoreIfDefault]
         [BsonDefaultValue(0L)]
         [BsonElement]
@@ -254,6 +288,12 @@ namespace ET
         [BsonIgnore]
         protected Entity domain;
 
+        /// <summary>
+        /// 设置当前Entity所在domain，即所在Scene
+        /// domain还有一个重要作用，就是设置domain时才会执行反序列化System，还有注册EventSystem
+        /// 这样在写逻辑时，方便能拿到自己所在Scene上的数据
+        /// </summary>
+        /// <exception cref="Exception">domain设置不允许为空</exception>
         [BsonIgnore]
         public Entity Domain
         {
@@ -634,7 +674,6 @@ namespace ET
                 return;
             }
 
-            Type type = component.GetType();
             Entity c = this.GetComponent(component.GetType());
             if (c == null)
             {
@@ -729,6 +768,8 @@ namespace ET
             return component;
         }
 
+        #region AddComponent Method
+
         public Entity AddComponent(Entity component)
         {
             Type type = component.GetType();
@@ -774,6 +815,8 @@ namespace ET
             }
 
             Entity component = Create(type, isFromPool);
+            
+            //  这里类似Unity GameObject上挂载Component，实际上还是同一个GameObject，所以Id一致，只不过所添加的组件IsComponent为true
             component.Id = this.Id;
             component.ComponentParent = this;
             EventSystem.Instance.Awake(component);
@@ -844,7 +887,11 @@ namespace ET
             }
             return component as K;
         }
+
+        #endregion
         
+        #region AddChild Method
+
         public Entity AddChild(Entity entity)
         {
             entity.Parent = this;
@@ -948,5 +995,7 @@ namespace ET
             EventSystem.Instance.Awake(component, a, b, c);
             return component;
         }
+        
+        #endregion
     }
 }
